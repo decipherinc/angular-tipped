@@ -5,9 +5,9 @@
   var tipped = angular.module('decipher.tipped', []);
 
   var defaults = {
-    showOn: 'mouseover',
+    showOn: 'mouseenter',
     showDelay: 1000,
-    hideOn: 'mouseout',
+    hideOn: 'mouseleave',
     hideDelay: 500,
     target: 'self'
   };
@@ -19,7 +19,7 @@
   tipped.constant('tippedOptions', {});
 
   /**
-   * There are two way to use this directive:
+   * There are two ways to use this directive:
    *
    * An inline template, with interpolation available:
    *
@@ -74,10 +74,11 @@
                 // this allows us to use templates without wrappers.  we wrap in a
                 // SECOND div because interpolation is wonky and becomes confused
                 // if there is no wrapper.
-                var template = $compile('<div>' + $interpolate('<div>' +
-                                                               res.data +
-                                                               '</div>')(scope) +
-                                        '</div>')(scope), tt, t;
+                var template, tt;
+
+                template = $compile('<div>' + 
+                  $interpolate('<div>' + res.data + '</div>')(scope) +
+                  '</div>')(scope);
 
                 options.afterUpdate = function afterUpdate(content, element) {
                   var c = angular.element(content),
@@ -86,26 +87,8 @@
                     c.html($compile('<div>' + c.html() + '</div>')(scope));
                   });
 
-                  // these following bindings are there because somehow
-                  // using the afterUpdate callback breaks hiding, at least
-                  // in the case of mouseout.
-                  el.bind(options.hideOn, function () {
-                    t = $timeout(function () {
-                      // suppress any BS errors from Tipped
-                      try {
-                        tt.hide();
-                      } catch (e) {
-                      }
-                    }, options.hideDelay);
-                  });
-
-                  el.bind(options.showOn, function () {
-                    $timeout.cancel(t);
-                  });
-
                 };
-                tt =
-                $window.Tipped.create(element[0], template.html(), options);
+                tt = $window.Tipped.create(element[0], template.html(), options);
               });
 
           }
