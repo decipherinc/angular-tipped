@@ -13,8 +13,8 @@ bower install angular-tipped
 Dependencies
 ============
 
-- Tipped (http://projects.nickstakenburg.com/tipped) tooltip library
-- jQuery (http://jquery.com) since Tipped needs it
+- Tipped 3.1.8 (http://projects.nickstakenburg.com/tipped) tooltip library
+- jQuery 1.4.4+ (http://jquery.com) since Tipped needs it
 
 Usage
 =====

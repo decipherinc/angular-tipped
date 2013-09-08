@@ -74,9 +74,7 @@
                 // this allows us to use templates without wrappers.  we wrap in a
                 // SECOND div because interpolation is wonky and becomes confused
                 // if there is no wrapper.
-                var template, tt;
-
-                template = $compile('<div>' + 
+                var template = $compile('<div>' + 
                   $interpolate('<div>' + res.data + '</div>')(scope) +
                   '</div>')(scope);
 
@@ -88,7 +86,7 @@
                   });
 
                 };
-                tt = $window.Tipped.create(element[0], template.html(), options);
+                $window.Tipped.create(element[0], template.html(), options);
               });
 
           }
