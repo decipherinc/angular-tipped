@@ -12,10 +12,6 @@
     target: 'self'
   };
 
-  /**
-   * Grab this constant and put stuff in it to override the defaults above
-   * or set any defaults you please.
-   */
   tipped.constant('tippedOptions', {});
 
   /**
@@ -48,14 +44,15 @@
             ttDefaults = scope.$eval(tipped),
             options;
 
-          options =
-          angular.extend(tippedDefaults, angular.extend(moduleDefaults,
-            ttDefaults));
+          options = angular.extend(tippedDefaults, moduleDefaults);
 
           // explicitly get options from skin since we have to do stuff manually.
-          if (options.skin && (skin = $window.Tipped.Skins[options.skin])) {
+          if (options.skin &&
+              (skin = $window.Tipped.Skins[ttDefaults.skin || options.skin])) {
             options = angular.extend(options, skin);
           }
+
+          options = angular.extend(options, ttDefaults);
 
           if (attrs.title) {
             $window.Tipped.create(element[0], $interpolate(attrs.title)(scope),
@@ -64,31 +61,22 @@
           else if (attrs.templateUrl) {
             $http.get(scope.$eval(attrs.templateUrl), {cache: $templateCache})
               .then(function receiveTemplate(res) {
-                // we have to interpolate and compile the template first because Tipped
-                // will size its tooltip based on the HTML.  if we left the
-                // uninterpolated values in the HTML, the resulting tooltip
-                // could be larger/smaller than what actually should be shown.
-                // this means, unfortunately, we must compile once for this reason,
-                // and again to actually wire up the resulting tooltip.
-                // we wrap in a <div> in order to get the html of the tooltip;
-                // this allows us to use templates without wrappers.  we wrap in a
-                // SECOND div because interpolation is wonky and becomes confused
-                // if there is no wrapper.
-                var template = $compile('<div>' + 
-                  $interpolate('<div>' + res.data + '</div>')(scope) +
-                  '</div>')(scope);
 
-                options.afterUpdate = function afterUpdate(content, element) {
-                  var c = angular.element(content),
-                    el = angular.element(element);
-                  scope.$apply(function () {
-                    c.html($compile('<div>' + c.html() + '</div>')(scope));
-                  });
+                var compiled; // compiled template
 
+                options.afterUpdate = function afterUpdate(content) {
+                  var c = angular.element(content);
+                  c.html(compiled);
                 };
-                $window.Tipped.create(element[0], template.html(), options);
-              });
 
+                // compilation does not require interpolation
+                $timeout(function () {
+                  scope.$apply(function () {
+                    compiled = $compile('<div>' + res.data + '</div>')(scope);
+                  });
+                  $window.Tipped.create(element[0], compiled.html(), options);
+                }, 0, false);
+              });
           }
         }
       };
