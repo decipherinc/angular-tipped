@@ -41,7 +41,7 @@
           var tipped = attrs.tipped || '{}', skin,
             tippedDefaults = angular.copy(defaults),
             moduleDefaults = angular.copy(tippedOptions),
-            ttDefaults = scope.$eval(tipped),
+            ttDefaults = scope.$eval(tipped), tt,
             options;
 
           options = angular.extend(tippedDefaults, moduleDefaults);
@@ -54,30 +54,51 @@
 
           options = angular.extend(options, ttDefaults);
 
-          if (attrs.title) {
-            $window.Tipped.create(element[0], $interpolate(attrs.title)(scope),
-              options);
+          if (angular.isDefined(attrs.title)) {
+            attrs.$observe('title', function (value) {
+              if (!tt && value) {
+                tt = $window.Tipped.create(element[0], $interpolate(value)(scope),
+                  options);
+              }
+            });
           }
           else if (attrs.templateUrl) {
+            scope.$on('Tipped.refresh', function() {
+              $window.Tipped.refresh(element[0]);
+            });
+
             $http.get(scope.$eval(attrs.templateUrl), {cache: $templateCache})
               .then(function receiveTemplate(res) {
 
-                var compiled; // compiled template
+                var compiledTemplate; // compiled template
 
                 options.afterUpdate = function afterUpdate(content) {
                   var c = angular.element(content);
-                  c.html(compiled);
+                  c.html(compiledTemplate);
                 };
 
                 // compilation does not require interpolation
                 $timeout(function () {
                   scope.$apply(function () {
-                    compiled = $compile('<div>' + res.data + '</div>')(scope);
+                    compiledTemplate = $compile('<div>' + res.data + '</div>')(scope);
                   });
-                  $window.Tipped.create(element[0], compiled.html(), options);
+                  tt = $window.Tipped.create(element[0], compiledTemplate.html(), options);
                 }, 0, false);
               });
           }
+
+          // watch the 'show' option.
+          scope.$watch(function() {
+            return scope.$eval(tipped).show;
+          }, function(newVal) {
+            if (tt) {
+              if (newVal) {
+                tt.show();
+              } else {
+                tt.hide();
+              }
+            }
+          });
         }
       };
     }

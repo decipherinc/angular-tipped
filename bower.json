@@ -1,6 +1,6 @@
 {
   "name": "angular-tipped",
-  "version": "0.1.2",
+  "version": "0.1.4",
   "main": "tipped.js",
   "ignore": [
     "**/.*",
