@@ -44,6 +44,30 @@
             ttDefaults = scope.$eval(tipped), tt,
             options;
 
+          function make() {
+            return $http.get(scope.$eval(attrs.templateUrl),
+              {cache: $templateCache})
+              .then(function receiveTemplate(res) {
+
+                var compiledTemplate; // compiled template
+
+                options.afterUpdate = function afterUpdate(content) {
+                  var c = angular.element(content);
+                  c.html(compiledTemplate);
+                };
+
+                // compilation does not require interpolation
+                return $timeout(function () {
+                  scope.$apply(function () {
+                    compiledTemplate =
+                    $compile('<div>' + res.data + '</div>')(scope);
+                  });
+                  return $window.Tipped.create(element[0],
+                    compiledTemplate.html(), options);
+                }, 0, false);
+              });
+          }
+
           options = angular.extend(tippedDefaults, moduleDefaults);
 
           // explicitly get options from skin since we have to do stuff manually.
@@ -57,46 +81,40 @@
           if (angular.isDefined(attrs.title)) {
             attrs.$observe('title', function (value) {
               if (!tt && value) {
-                tt = $window.Tipped.create(element[0], $interpolate(value)(scope),
+                tt =
+                $window.Tipped.create(element[0], $interpolate(value)(scope),
                   options);
               }
             });
           }
           else if (attrs.templateUrl) {
-            scope.$on('Tipped.refresh', function() {
+            scope.$on('Tipped.refresh', function () {
               $window.Tipped.refresh(element[0]);
             });
 
-            $http.get(scope.$eval(attrs.templateUrl), {cache: $templateCache})
-              .then(function receiveTemplate(res) {
-
-                var compiledTemplate; // compiled template
-
-                options.afterUpdate = function afterUpdate(content) {
-                  var c = angular.element(content);
-                  c.html(compiledTemplate);
-                };
-
-                // compilation does not require interpolation
-                $timeout(function () {
-                  scope.$apply(function () {
-                    compiledTemplate = $compile('<div>' + res.data + '</div>')(scope);
-                  });
-                  tt = $window.Tipped.create(element[0], compiledTemplate.html(), options);
-                }, 0, false);
+            if (options.showOn) {
+              element.bind(options.showOn, function () {
+                make().then(function (tt) {
+                  tt.show();
+                });
               });
+            }
           }
 
           // watch the 'show' option.
-          scope.$watch(function() {
+          scope.$watch(function () {
             return scope.$eval(tipped).show;
-          }, function(newVal) {
+          }, function (newVal) {
             if (tt) {
               if (newVal) {
                 tt.show();
               } else {
                 tt.hide();
               }
+            } else if (newVal) {
+              make().then(function (tt) {
+                tt.show();
+              });
             }
           });
         }
