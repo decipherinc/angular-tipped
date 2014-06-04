@@ -84,6 +84,11 @@
                 tt =
                 $window.Tipped.create(element[0], $interpolate(value)(scope),
                   options);
+              }else if(tt && value){
+                tt.remove();
+                tt =
+                $window.Tipped.create(element[0], $interpolate(value)(scope),
+                  options);                
               }
             });
           }
