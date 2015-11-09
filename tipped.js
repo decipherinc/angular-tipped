@@ -121,7 +121,15 @@ tipped.directive('tipped',
             if (options.showOn) {
               element.bind(options.showOn, function () {
                 make().then(function (tt) {
-                  tt.show();
+                  if (options.showDelay) {
+                    // show after the specified delay
+                    $timeout(function() {
+                      tt.show();
+                    }, options.showDelay);
+                  } else {
+                    // show immediately
+                    tt.show();
+                  }
                 });
               });
               scope.$on('$destroy', function () {
