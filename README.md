@@ -4,7 +4,7 @@ An AngularJS directive for the [Tipped](http://projects.nickstakenburg.com/tippe
 
 ## Usage
 
-Require the `fv.tipped` module:
+Require the `decipher.tipped` module:
 
 ```javascript
 angular.module('myApp', ['fv.tipped']);
