@@ -168,7 +168,7 @@ tipped.directive('tipped',
                           titleDefaults.showOn === 'mouseenter') {
                           ht.show();
                         }
-                      }, titleDefaults.showDelay);
+                      }, titleDefaults.showDelay, false);
 
                     }
                   }).bind('mouseleave', function () {
@@ -181,7 +181,7 @@ tipped.directive('tipped',
                         Tipped.visible(hoverElement)) {
                         ht.hide();
                       }
-                    }, titleDefaults.showDelay);
+                    }, titleDefaults.showDelay, false);
                   });
                 }
 
@@ -193,22 +193,24 @@ tipped.directive('tipped',
             });
           }
 
-          // watch the 'show' option.
-          scope.$watch(function () {
-            return scope.$eval(tipped).show;
-          }, function (newVal) {
-            if (tt) {
-              if (newVal) {
-                tt.show();
-              } else {
-                tt.hide();
+          if (attrs.templateUrl) {
+            // watch the 'show' option.
+            scope.$watch(function () {
+              return scope.$eval(tipped).show;
+            }, function (newVal) {
+              if (tt) {
+                if (newVal) {
+                  tt.show();
+                } else {
+                  tt.hide();
+                }
+              } else if (newVal) {
+                make().then(function (tt) {
+                  tt.show();
+                });
               }
-            } else if (newVal) {
-              make().then(function (tt) {
-                tt.show();
-              });
-            }
-          });
+            });
+          }
 
           // Remove the tooltip if scope is destroyed, otherwise it will
           // linger.
